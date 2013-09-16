@@ -5,7 +5,7 @@ var ORM			= require('../../');
 
 describe("Model instance", function() {
 	var db = null;
-	var Person = null;
+	var Person = null, item=null,main_item=null;
 	var protocol = common.protocol();
 
 	var setup = function () {
@@ -24,7 +24,10 @@ describe("Model instance", function() {
 				}
 			});
 
-			return helper.dropSync(Person, function () {
+      main_item = db.define("main_item", {name:{type:'text'}}, {auteFetch: true});
+      item = db.define("item", {name:{type:'text'}}, {cache:false});
+      item.hasOne('main_item',main_item, {reverse:'items',autoFetch:true});
+			return helper.dropSync([Person,item,main_item], function () {
 				Person.create([{
 					name: "Jeremy Doe"
 				}, {
@@ -50,6 +53,25 @@ describe("Model instance", function() {
 		return db.close();
 	});
 
+  describe("savedfdsf", function(){
+    it.only("should save", function(done){
+      main_item.create({name:'bvcv'}, function(err, p){
+        item.create({name:'iii'}, function(err, i){
+          p.setItems(i, function(err){
+            should.not.exist(err);
+              main_item.find({name:'bvcv'}).first(function(err, mod){
+                mod.save({name:'ddd'}, function(err){
+                  should.not.exist(err);
+                  done();
+                });
+          
+            });
+          });
+        });
+      });
+
+    });
+  });
 	describe("#isInstance", function () {
 		it("should always return true for instances", function (done) {
 			should.equal((new Person).isInstance, true);
